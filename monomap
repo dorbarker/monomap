@@ -1,5 +1,43 @@
 #!/bin/bash
 
+# Uses samtools to find reads that map to one reference but not the other
+
+read -r -d '' help_msg << EOF
+Find reads that mapped to reference A, but not to reference B.
+usage: monomap A.bam B.bam [outdir]\n
+EOF
+
+case $1 in
+        "-h")
+                printf "$help_msg"
+                exit
+                ;;
+        "--help")
+                printf "$help_msg"
+                exit
+                ;;
+        "")
+                printf "$help_msg"
+                exit
+                ;;
+        *)
+esac
+
+case $2 in
+        "-h")
+                printf "$help_msg"
+                exit
+                ;;
+        "--help")
+                printf "$help_msg"
+                exit
+                ;;
+        "")
+                printf "$help_msg"
+                exit
+                ;;
+        *)
+esac
 
 function read_names {
     samtools view -f 2 "$1" | cut -f 1 | sort -u 
