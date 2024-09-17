@@ -40,7 +40,7 @@ case $2 in
 esac
 
 function read_names {
-    samtools view -f 2 "$1" | cut -f 1 | sort -u 
+    samtools view -b -f 2 "$1" | samtools view -F 256 | cut -f 1 | sort -u
 }
 
 A_bn=$(basename "$1" .bam)
@@ -56,4 +56,4 @@ names_only_in_A=$(comm -23 <(tr ' ' '\n' <<< $A_read_names) <(tr ' ' '\n' <<< $B
 
 samtools view -b -N <(tr ' ' '\n' <<< $names_only_in_A) "$1" -o ${out_bam_path}
 
-samtools fastq -1 "${outdir}/${out_bn}_1.fastq" -2 "${outdir}/${out_bn}_2.fastq" "${out_bam_path}" 
+samtools fastq -N -1 "${outdir}/${out_bn}_1.fastq" -2 "${outdir}/${out_bn}_2.fastq" -s "${outdir}/${out_bn}.fastq" "${out_bam_path}"
