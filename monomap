@@ -1,0 +1,21 @@
+#!/bin/bash
+
+
+function read_names {
+    samtools view -f 2 "$1" | cut -f 1 | sort -u 
+}
+
+A_bn=$(basename "$1" .bam)
+B_bn=$(basename "$2" .bam)
+out_bn="${A_bn}_not-in_${B_bn}"
+outdir="${3:-$(pwd)}"
+out_bam_path="${outdir}/${out_bn}.bam"
+
+A_read_names=$(read_names "$1")
+B_read_names=$(read_names "$2")
+
+names_only_in_A=$(comm -23 <(tr ' ' '\n' <<< $A_read_names) <(tr ' ' '\n' <<< $B_read_names))
+
+samtools view -b -N <(tr ' ' '\n' <<< $names_only_in_A) "$1" -o ${out_bam_path}
+
+samtools fastq -1 "${outdir}/${out_bn}_1.fastq" -2 "${outdir}/${out_bn}_2.fastq" "${out_bam_path}" 
