@@ -3,7 +3,7 @@
 # Uses samtools to find reads that map to one reference but not the other
 
 read -r -d '' help_msg << EOF
-Find reads that mapped to reference A, but not to reference B.
+Find reads that map to one reference but not the other.
 usage: monomap A.bam B.bam [outdir]\n
 EOF
 
@@ -45,15 +45,22 @@ function read_names {
 
 A_bn=$(basename "$1" .bam)
 B_bn=$(basename "$2" .bam)
-out_bn="${A_bn}_not-in_${B_bn}"
+
+A_out_bn="${A_bn}_not-in_${B_bn}"
+B_out_bn="${B_bn}_not-in_${A_bn}"
+
 outdir="${3:-$(pwd)}"
-out_bam_path="${outdir}/${out_bn}.bam"
+A_out_bam_path="${outdir}/${A_out_bn}.bam"
+B_out_bam_path="${outdir}/${B_out_bn}.bam"
 
 A_read_names=$(read_names "$1")
 B_read_names=$(read_names "$2")
 
 names_only_in_A=$(comm -23 <(tr ' ' '\n' <<< $A_read_names) <(tr ' ' '\n' <<< $B_read_names))
+names_only_in_B=$(comm -23 <(tr ' ' '\n' <<< $B_read_names) <(tr ' ' '\n' <<< $A_read_names))
 
-samtools view -b -N <(tr ' ' '\n' <<< $names_only_in_A) "$1" -o ${out_bam_path}
+samtools view -b -N <(tr ' ' '\n' <<< $names_only_in_A) "$1" -o ${A_out_bam_path}
+samtools view -b -N <(tr ' ' '\n' <<< $names_only_in_B) "$1" -o ${B_out_bam_path}
 
-samtools fastq -N -1 "${outdir}/${out_bn}_1.fastq" -2 "${outdir}/${out_bn}_2.fastq" "${out_bam_path}"
+samtools fastq -N -1 "${outdir}/${A_out_bn}_1.fastq" -2 "${outdir}/${A_out_bn}_2.fastq" "${A_out_bam_path}"
+samtools fastq -N -1 "${outdir}/${B_out_bn}_1.fastq" -2 "${outdir}/${B_out_bn}_2.fastq" "${B_out_bam_path}"
